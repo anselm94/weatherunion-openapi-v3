@@ -14,9 +14,9 @@ Inorder to try out Weather Union's free API
 
 ## OpenAPI Documentation
 
-- [`weatherunion.openapi.yaml`](./weatherunion.openapi.yaml)
+- See [Try Out/Preview](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/anselm94/weatherunion-openapi-v3/refs/heads/main/weatherunion.openapi.yaml)
 
-- See [Preview](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/anselm94/weatherunion-openapi-v3/refs/heads/main/weatherunion.openapi.yaml)
+- [`weatherunion.openapi.yaml`](./weatherunion.openapi.yaml) or [`weatherunion.openapi.json`](./weatherunion.openapi.json)
 
 ## License
 
