@@ -1,0 +1,230 @@
+openapi: 3.1.0
+info:
+  title: Weather Union API
+  description: API for retrieving weather data from Weather Union by Zomato.
+  version: '1.0.0'
+servers:
+  - url: https://www.weatherunion.com/gw/weather/external/v0
+    description: Weather Union Server
+tags:
+  - name: Weather Data
+    description: Operations related to retrieving weather data.
+paths:
+  /get_weather_data:
+    get:
+      tags:
+        - Weather Data
+      summary: Get weather data by coordinates
+      description: Retrieves weather data based on latitude and longitude. You can find the latitude and longitude of our weather stations in the list [here](https://b.zmtcdn.com/data/file_assets/65fa362da3aa560a92f0b8aeec0dfda31713163042.pdf).
+      operationId: getWeatherDataByCoords
+      parameters:
+        - name: latitude
+          in: query
+          required: true
+          description: The latitude of the location.
+          schema:
+            type: number
+            format: float
+          example: 12.933756
+        - name: longitude
+          in: query
+          required: true
+          description: The longitude of the location.
+          schema:
+            type: number
+            format: float
+          example: 77.625825
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Successful retrieval of weather data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetWeatherDataSuccessResponse'
+              example:
+                status: 200
+                message: ""
+                device_type: 1
+                locality_weather_data:
+                  temperature: 25.68
+                  humidity: 25.81
+                  wind_speed: 1.15
+                  wind_direction: 331.2
+                  rain_intensity: 0
+                  rain_accumulation: 0.4
+                  aqi_pm_2_point_5: 84
+                  aqi_pm_10: 75
+        '400':
+          description: Bad Request - Invalid parameters provided.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetWeatherDataErrorResponse'
+              examples:
+                InvalidCoordinates:
+                  summary: Invalid Coordinates
+                  value:
+                    status: "400"
+                    message: "coordinates are invalid"
+                UnsupportedLocation:
+                  summary: Unsupported Latitude and Longitude
+                  value:
+                    status: "400"
+                    message: "latitude longitude not supported. refer to the api doc for supported areas"
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetWeatherDataErrorResponse'
+              example:
+                status: "500"
+                message: "something went wrong"
+  /get_locality_weather_data:
+    get:
+      tags:
+        - Weather Data
+      summary: Get weather data by locality ID
+      description: Retrieves weather data based on the locality ID of the weather station. You can find the `locality_id` along with latitude and longitude of our weather stations in the list [here](https://b.zmtcdn.com/data/file_assets/65fa362da3aa560a92f0b8aeec0dfda31713163042.pdf).
+      operationId: getWeatherDataByLocality
+      parameters:
+        - name: locality_id
+          in: query
+          required: true
+          description: The locality_id of the weather station.
+          schema:
+            type: string # Changed from number based on example 'ZWL001156'
+          example: ZWL001156
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Successful retrieval of weather data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetWeatherDataSuccessResponse'
+              example:
+                status: 200
+                message: ""
+                device_type: 1
+                locality_weather_data:
+                  temperature: 25.68
+                  humidity: 25.81
+                  wind_speed: 1.15
+                  wind_direction: 331.2
+                  rain_intensity: 0
+                  rain_accumulation: 0.4
+                  aqi_pm_2_point_5: 84
+                  aqi_pm_10: 75
+        '400':
+          description: Bad Request - Invalid parameters provided.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetWeatherDataErrorResponse'
+              examples:
+                EmptyId:
+                  summary: Empty city or locality ID
+                  value:
+                    status: "400"
+                    message: "Error because received empty city_id or empty locality id"
+                InvalidLocalityId:
+                  summary: Invalid locality ID
+                  value:
+                    status: "400"
+                    message: "check the locality id from the api doc"
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetWeatherDataErrorResponse'
+              example:
+                status: "500"
+                message: "something went wrong"
+
+components:
+  schemas:
+    GetWeatherDataSuccessResponse:
+      type: object
+      properties:
+        status:
+          type: integer # Changed to integer based on example
+          description: Status code of request.
+          example: 200
+        message:
+          type: string
+          description: Status code description.
+          example: ""
+        device_type:
+          type: integer
+          enum: [1, 2]
+          description: "1 - AWS (all locality_weather_data parameters available), 2 - Rain gauge system (rain_intensity and rain_accumulation available)"
+          example: 1
+        locality_weather_data:
+          $ref: '#/components/schemas/LocalityWeatherData'
+          nullable: true # As specified in the documentation
+    LocalityWeatherData:
+       type: object
+       description: Weather data for the specific locality.
+       properties:
+         temperature:
+           type: number
+           format: float
+           description: Current temperature in °C.
+           example: 25.68
+         humidity:
+           type: number
+           format: float
+           description: Current humidity in %.
+           example: 25.81
+         wind_speed:
+           type: number
+           format: float
+           description: Current wind speed in m/s.
+           example: 1.15
+         wind_direction:
+           type: number
+           format: float
+           description: Current wind direction in degrees.
+           example: 331.2
+         rain_intensity:
+           type: number
+           format: float # Changed based on example context, though example shows "0" string
+           description: Current rain intensity in mm/min.
+           example: 0
+         rain_accumulation:
+           type: number
+           format: float
+           description: Total rain accumulation (mm) today from 12 AM IST.
+           example: 0.4
+         aqi_pm_2_point_5:
+           type: number
+           format: float # Assuming float, though example is integer
+           description: Current PM 2.5 Concentration (µg/m³).
+           example: 84
+         aqi_pm_10:
+           type: number
+           format: float # Assuming float, though example is integer
+           description: Current PM 10 Concentration (µg/m³).
+           example: 75
+    GetWeatherDataErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string # Error status is string in examples
+          description: Status code of the error.
+          example: "400"
+        message:
+          type: string
+          description: Description of the error.
+          example: "coordinates are invalid"
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-zomato-api-key # Corrected header name
+      description: API Key for authentication.
